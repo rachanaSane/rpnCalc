@@ -31,9 +31,11 @@ operator <operator> (position: <pos>): insufficient parameters
   
 • After displaying the warning, all further processing of the string terminates and the current state of the stack is displayed.
   
-To build jar file
+<h3> To build jar file
+
 Run : mvn clean install
   
-To execute the program from command line <h3>  
+<h3>To execute the program from command line 
+
 java -cp <path_of_jar>\rpnCalc-0.0.1-SNAPSHOT.jar  rac.rpn.calculator.App
 
