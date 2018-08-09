@@ -60,20 +60,20 @@ public class RpnCalc {
         }
 
         // searching for the operator
-        Operation operator = Operation.getEnum(operatorString);
+        Command operator = Command.getEnum(operatorString);
         
         if (operator == null) {
             throw new RPNCalculatorException("invalid operator");
         }
 
         // clear value stack and instructions stack
-        if (operator == Operation.CLEAR) {
+        if (operator == Command.CLEAR) {
             clearStacks();
             return;
         }
 
         // undo evaluates the last instruction in stack
-        if (operator == Operation.UNDO) {
+        if (operator == Command.UNDO) {
             undoLastInstruction();        	
             return;
         }
@@ -92,15 +92,15 @@ public class RpnCalc {
      * @param operator
      * @throws RPNCalculatorException
      */
-	private void performOperation(Operation operator) throws RPNCalculatorException {
+	private void performOperation(Command command) throws RPNCalculatorException {
 		// getting operands
         Double firstOperand = valuesStack.pop();
-        Double secondOperand = (operator.getNoOfOperands() > 1) ? valuesStack.pop() : null;
+        Double secondOperand = (command.getNoOfOperands() > 1) ? valuesStack.pop() : null;
         
-        backupValuesForUndo(operator, firstOperand, secondOperand);
+        backupValuesForUndo(command, firstOperand, secondOperand);
         
         // calculate
-        Double result = operator.calculate(firstOperand, secondOperand);
+        Double result = command.calculate(firstOperand, secondOperand);
 
         if (result != null) {
             valuesStack.push(result);       
@@ -116,7 +116,7 @@ public class RpnCalc {
 	 * @param firstOperand
 	 * @param secondOperand
 	 */
-	private void backupValuesForUndo(Operation operator, Double firstOperand, Double secondOperand) {
+	private void backupValuesForUndo(Command operator, Double firstOperand, Double secondOperand) {
 		undoStack.clear();        
         undoStack.push(firstOperand.toString());
         if(secondOperand !=null) {

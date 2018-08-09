@@ -12,7 +12,7 @@ import static java.lang.Math.sqrt;
  * @author Rachana Sane
  *
  */
-public enum Operation {	
+public enum Command {	
 
 
 	    ADDITION("+",  2) {
@@ -61,24 +61,24 @@ public enum Operation {
 	    };
 	
 	
-	    private static final Map<String, Operation> operationFactory = new HashMap<>();
+	    private static final Map<String, Command> commandFactory = new HashMap<>();
 
 	    static {
-	        for (Operation o : values()) {
-	        	operationFactory.put(o.getSymbol(), o);
+	        for (Command o : values()) {
+	        	commandFactory.put(o.getSymbol(), o);
 	        }
 	    }
 
 	    private String symbol;	
 	    private int noOfOperands;
 
-	    Operation(String symbol,int noOfOperands) {
+	    Command(String symbol,int noOfOperands) {
 	        this.symbol = symbol;	 
 	        this.noOfOperands = noOfOperands;
 	    }
 
-	    public static Operation getEnum(String value) {
-	        return operationFactory.get(value);
+	    public static Command getEnum(String value) {
+	        return commandFactory.get(value);
 	    }
 
 	    public abstract Double calculate(Double firstOperand, Double secondOperand) throws RPNCalculatorException;
