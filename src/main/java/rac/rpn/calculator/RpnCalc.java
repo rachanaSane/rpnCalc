@@ -24,16 +24,14 @@ public class RpnCalc {
      * @param isUndoOperation indicates if the operation is an undo operation.
      * @throws CalculatorException
      */
-    private void processToken(String token, boolean isUndoOperation) throws Exception {
+    private void processToken(String token) throws Exception {
         Double value = tryParseDouble(token);
         if (value == null) {
-            processOperator(token, isUndoOperation);
+            processOperator(token);
         } else {
             // it's a digit
-            valuesStack.push(Double.parseDouble(token));
-        /*    if (!isUndoOperation) {
-                instructionsStack.push(null);
-            }*/
+          valuesStack.push(Double.parseDouble(token));
+       
         }
     }
 
@@ -44,7 +42,7 @@ public class RpnCalc {
      * @param isUndoOperation indicates if the operation is an undo operation.
      * @throws CalculatorException
      */
-    private void processOperator(String operatorString, boolean isUndoOperation) throws Exception {
+    private void processOperator(String operatorString) throws Exception {
 
         // check if there is an empty stack
         if (valuesStack.isEmpty()) {
@@ -90,34 +88,37 @@ public class RpnCalc {
         Double result = operator.calculate(firstOperand, secondOperand);
 
         if (result != null) {
-            valuesStack.push(result);
-        /*    if (!isUndoOperation) {
-                instructionsStack.push(new Command(Operation.getEnum(operatorString), firstOperand));
-            }*/
+            valuesStack.push(result);       
         }
 
     }
 
   private void undoLastInstruction() throws Exception {
-    /*    if (instructionsStack.isEmpty()) {
-            throw new Exception("no operations to undo");
-        }
-
-        String lastInstruction = instructionsStack.pop();*/
-        if (instructionsStack.isEmpty()) {
-            valuesStack.pop();
-        } else {
-        	 valuesStack.pop();
-        	String operationStr=instructionsStack.pop();
-        	String val1 =instructionsStack.pop();
-        	String val2 =instructionsStack.pop();
-        	StringBuffer newStr = new StringBuffer();
-        	newStr.append(val1).append(" ");
-        	if(val2 !=null) {
-        		newStr.append(val2);
+	  		valuesStack.pop();
+	  		
+	  		if (!instructionsStack.isEmpty()) {           	
+        	instructionsStack.pop(); // remove operation symbol
+        	
+        	StringBuffer newStr = new StringBuffer(); 
+        	if(!instructionsStack.isEmpty()) {
+        		newStr.append(instructionsStack.pop());
+        		newStr.append(" ");
         	}
+        	
+        	
+        	if(!instructionsStack.isEmpty()) {
+        		newStr.append(instructionsStack.pop());
+        		//newStr.append(" ");
+        	}
+        	
+        //	String val2 =instructionsStack.pop();
+        //	StringBuffer newStr = new StringBuffer();
+        	//newStr.append(val1).append(" ");
+        //	if(val2 !=null) {
+        //		newStr.append(val2);
+        //	}
         //	evaluate(lastInstruction.getReverseInstruction(), true);
-        	evaluate(newStr.toString(), false);
+        	evaluate(newStr.toString());
         }
     }
 
@@ -147,15 +148,7 @@ public class RpnCalc {
         return valuesStack.get(index);
     }
 
-    /**
-     * evaluates input expression and pushes the result into the valuesStack
-     *
-     * @param input valid RPN expression
-     * @throws CalculatorException
-     */
-    public void evaluate(String input) throws Exception {
-    	evaluate(input, false);
-    }
+  
 
     /**
      * Evaluates a RPN expression and pushes the result into the valuesStack
@@ -166,7 +159,7 @@ public class RpnCalc {
      *                        but they are not pushed into instructionsStack
      * @throws CalculatorException
      */
-    private void evaluate(String input, boolean isUndoOperation) throws Exception {
+    public void evaluate(String input) throws Exception {
         if (input == null) {
             throw new Exception("Input cannot be null.");
         }
@@ -174,17 +167,17 @@ public class RpnCalc {
         String[] result = input.split("\\s");
         for (String aResult : result) {
             currentTokenIndex++;
-            processToken(aResult, isUndoOperation);
+            processToken(aResult);
         }
     }
     
-    private void evaluateLambada(String input, boolean isUndoOperation) throws Exception {
+    private void evaluateLambada(String input) throws Exception {
         if (input == null) {
             throw new Exception("Input cannot be null.");
         }
         Arrays.asList(input.split(" ")).stream().forEach(number -> {
         	try {
-				processToken(number, isUndoOperation);
+				processToken(number);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

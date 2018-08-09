@@ -10,25 +10,25 @@ public enum Operation {
 	
 
 
-	    ADDITION("+", "-", 2) {
+	    ADDITION("+",  2) {
 	        public Double calculate(Double firstOperand, Double secondOperand) throws Exception {
 	            return secondOperand + firstOperand;
 	        }
 	    },
 
-	    SUBTRACTION("-", "+", 2) {
+	    SUBTRACTION("-",  2) {
 	        public Double calculate(Double firstOperand, Double secondOperand) {
 	            return secondOperand - firstOperand;
 	        }
 	    },
 
-	    MULTIPLICATION("*", "/", 2) {
+	    MULTIPLICATION("*", 2) {
 	        public Double calculate(Double firstOperand, Double secondOperand) {
 	            return secondOperand * firstOperand;
 	        }
 	    },
 
-	    DIVISION("/", "*", 2) {
+	    DIVISION("/",  2) {
 	        public Double calculate(Double firstOperand, Double secondOperand) throws Exception {
 	            if (firstOperand == 0)
 	                throw new Exception("Cannot divide by 0.");
@@ -36,25 +36,25 @@ public enum Operation {
 	        }
 	    },
 
-	    SQUAREROOT("sqrt", "pow", 1) {
+	    SQUAREROOT("sqrt",  1) {
 	        public Double calculate(Double firstOperand, Double secondOperand) {
 	            return sqrt(firstOperand);
 	        }
 	    },
 
-	    POWER("pow", "sqrt", 1) {
+	    POWER("pow",  1) {
 	        public Double calculate(Double firstOperand, Double secondOperand) {
 	            return pow(firstOperand, 2.0);
 	        }
 	    },
 
-	    UNDO("undo", null, 0) {
+	    UNDO("undo",  0) {
 	        public Double calculate(Double firstOperand, Double secondOperand) throws Exception {
 	            throw new Exception("Invalid operation");
 	        }
 	    },
 
-	    CLEAR("clear", null, 0) {
+	    CLEAR("clear",  0) {
 	        public Double calculate(Double firstOperand, Double secondOperand) throws Exception {
 	            throw new Exception("Invalid operation");
 	        }
@@ -72,12 +72,12 @@ public enum Operation {
 	    }
 
 	    private String symbol;
-	    private String opposite;
+	 //   private String opposite;
 	    private int operandsNumber;
 
-	    Operation(String symbol, String opposite, int operandsNumber) {
+	    Operation(String symbol,int operandsNumber) {
 	        this.symbol = symbol;
-	        this.opposite = opposite;
+	    //    this.opposite = opposite;
 	        this.operandsNumber = operandsNumber;
 	    }
 
@@ -91,9 +91,7 @@ public enum Operation {
 	        return symbol;
 	    }
 
-	    public String getOpposite() {
-	        return opposite;
-	    }
+	  
 
 	    public int getOperandsNumber() {
 	        return operandsNumber;
