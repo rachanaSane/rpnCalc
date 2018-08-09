@@ -5,12 +5,15 @@ import java.text.DecimalFormat;
 import java.util.Stack;
 
 /**
- * 
+ * RPN calculator application
  * @author Rachana Sane
  *
  */
 public class App 
 {
+	
+	public static final DecimalFormat tenDecimalFmt = new DecimalFormat("0.##########");
+	
 	public static void main(String[] args) {
 
 		 Console console = System.console();
@@ -23,27 +26,36 @@ public class App
 
 	        System.out.println("Enter your expression OR type 'ex' to exit");
 
-	        boolean keepRunning = true;
-	        while (keepRunning) {
+	        boolean executing = true;
+	        while (executing) {
 	            String inputString = console.readLine(" ");
 	            if ("ex".equals(inputString)) {
-	                keepRunning = false;
+	            	executing = false;
 	            } else {
-	                try {
-	                	calc.evaluate(inputString);
-	                } catch (Exception e) {
-	                    System.out.println(e.getMessage());
-	                }
-
-	                DecimalFormat fmt = new DecimalFormat("0.##########");
-	                Stack<Double> stack = calc.getValuesStack();
-	                System.out.print("Stack: ");
-	                for (Double value : stack) {
-	                    System.out.print(fmt.format(value));
-	                    System.out.print(" ");
-	                }
-	                System.out.printf("%n");
+	                runCalculator(calc, inputString);
 	            }
 	        }
 	    }
+
+	/**
+	 *  Start running calculator with provided input.
+	 * @param calc
+	 * @param inputString
+	 */
+	private static void runCalculator(RpnCalc calc, String inputString) {
+		try {
+			calc.evaluate(inputString);		
+		} catch (Exception e) {
+		    System.out.println(e.getMessage());
+		}
+
+		
+		Stack<Double> stack = calc.getValuesStack();
+		System.out.print("Stack: ");
+		for (Double value : stack) {
+		    System.out.print(tenDecimalFmt.format(value));
+		    System.out.print(" ");
+		}
+		System.out.printf("%n");
+	}
 }

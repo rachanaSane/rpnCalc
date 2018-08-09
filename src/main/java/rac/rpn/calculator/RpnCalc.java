@@ -1,15 +1,30 @@
 package rac.rpn.calculator;
 
-import java.util.Arrays;
+
 import java.util.Stack;
 
+import rac.rpn.exception.RPNCalculatorException;
+
+
+
+/**
+ * @author Rachana Sane
+ *
+ */
 public class RpnCalc {
 	
-	private Stack<Double> valuesStack = new Stack<Double>();
-    private Stack<String> instructionsStack = new Stack<String>();
-    private int currentTokenIndex = 0;
+	private Stack<Double> valuesStack = new Stack<>();
+    private Stack<String> undoStack = new Stack<>();
+    private int pos = 0;
 
-    private Double tryParseDouble(String str) {
+    
+    /**
+     * Handle parse exception
+     * if could not parse double value, return null instead of exception.
+     * @param str
+     * @return
+     */
+    private Double parseDouble(String str) {
         try {
             return Double.parseDouble(str);
         } catch (NumberFormatException nfe) {
@@ -18,41 +33,37 @@ public class RpnCalc {
     }
 
     /**
-     * Processes a RPN string token
-     *
-     * @param token           RPN token
-     * @param isUndoOperation indicates if the operation is an undo operation.
-     * @throws CalculatorException
+     *  Process input string
+     * @param input
+     * @throws RPNCalculatorException
      */
-    private void processToken(String token) throws Exception {
-        Double value = tryParseDouble(token);
-        if (value == null) {
-            processOperator(token);
-        } else {
-            // it's a digit
-          valuesStack.push(Double.parseDouble(token));
-       
+    private void processInputString(String input) throws RPNCalculatorException {
+        Double value = parseDouble(input);
+        if (value == null) { // this means it is operator
+            processOperator(input);
+        } else {           
+          valuesStack.push(Double.parseDouble(input));       
         }
     }
 
-    /**
-     * Executes an operation on the stack
-     *
-     * @param operatorString  RPN valid operator
-     * @param isUndoOperation indicates if the operation is an undo operation.
-     * @throws CalculatorException
-     */
-    private void processOperator(String operatorString) throws Exception {
+    
+   /**
+    *  Take correct action as per operation provided
+    * @param operatorString
+    * @throws RPNCalculatorException
+    */
+    private void processOperator(String operatorString) throws RPNCalculatorException {
 
         // check if there is an empty stack
         if (valuesStack.isEmpty()) {
-            throw new Exception("empty stack");
+            throw new RPNCalculatorException("empty stack");
         }
 
         // searching for the operator
         Operation operator = Operation.getEnum(operatorString);
+        
         if (operator == null) {
-            throw new Exception("invalid operator");
+            throw new RPNCalculatorException("invalid operator");
         }
 
         // clear value stack and instructions stack
@@ -63,26 +74,30 @@ public class RpnCalc {
 
         // undo evaluates the last instruction in stack
         if (operator == Operation.UNDO) {
-            undoLastInstruction();
-        	
+            undoLastInstruction();        	
             return;
         }
 
         // Checking that there are enough operand for the operation
-        if (operator.getOperandsNumber() > valuesStack.size()) {
+        if (operator.getNoOfOperands() > valuesStack.size()) {
             throwInvalidOperand(operatorString);
         }
 
-        // getting operands
+        performOperation(operator);
+
+    }
+
+    /**
+     * Perform arithmatic operation on operands
+     * @param operator
+     * @throws RPNCalculatorException
+     */
+	private void performOperation(Operation operator) throws RPNCalculatorException {
+		// getting operands
         Double firstOperand = valuesStack.pop();
-        Double secondOperand = (operator.getOperandsNumber() > 1) ? valuesStack.pop() : null;
+        Double secondOperand = (operator.getNoOfOperands() > 1) ? valuesStack.pop() : null;
         
-        instructionsStack.clear();        
-        instructionsStack.push(firstOperand.toString());
-        if(secondOperand !=null) {
-        	 instructionsStack.push(secondOperand.toString());
-        }
-        instructionsStack.push(operator.getSymbol());
+        backupValuesForUndo(operator, firstOperand, secondOperand);
         
         // calculate
         Double result = operator.calculate(firstOperand, secondOperand);
@@ -90,100 +105,91 @@ public class RpnCalc {
         if (result != null) {
             valuesStack.push(result);       
         }
+	}
 
-    }
 
-  private void undoLastInstruction() throws Exception {
+	/**
+	 * maintain separate  stack for undo operation
+	 * Backup 2 operands whenever you get operation string
+	 * 
+	 * @param operator
+	 * @param firstOperand
+	 * @param secondOperand
+	 */
+	private void backupValuesForUndo(Operation operator, Double firstOperand, Double secondOperand) {
+		undoStack.clear();        
+        undoStack.push(firstOperand.toString());
+        if(secondOperand !=null) {
+        	undoStack.push(secondOperand.toString());
+        }
+        undoStack.push(operator.getSymbol());
+	}
+
+	/**
+	 * perform undo operation
+	 * 
+	 * @throws RPNCalculatorException
+	 */
+  private void undoLastInstruction() throws RPNCalculatorException {
 	  		valuesStack.pop();
 	  		
-	  		if (!instructionsStack.isEmpty()) {           	
-        	instructionsStack.pop(); // remove operation symbol
+	  		if (!undoStack.isEmpty()) {           	
+	  			undoStack.pop(); // remove operation symbol
         	
-        	StringBuffer newStr = new StringBuffer(); 
-        	if(!instructionsStack.isEmpty()) {
-        		newStr.append(instructionsStack.pop());
+        	StringBuilder newStr = new StringBuilder(); 
+        	if(!undoStack.isEmpty()) {
+        		newStr.append(undoStack.pop());
         		newStr.append(" ");
         	}
         	
         	
-        	if(!instructionsStack.isEmpty()) {
-        		newStr.append(instructionsStack.pop());
-        		//newStr.append(" ");
-        	}
-        	
-        //	String val2 =instructionsStack.pop();
-        //	StringBuffer newStr = new StringBuffer();
-        	//newStr.append(val1).append(" ");
-        //	if(val2 !=null) {
-        //		newStr.append(val2);
-        //	}
-        //	evaluate(lastInstruction.getReverseInstruction(), true);
-        	evaluate(newStr.toString());
+        	if(!undoStack.isEmpty()) {
+        		newStr.append(undoStack.pop());        	
+        	}        	
+      
+        	evaluate(newStr.toString());        
         }
     }
 
     private void clearStacks() {
         valuesStack.clear();
-        instructionsStack.clear();
+        undoStack.clear();
     }
 
-    private void throwInvalidOperand(String operator) throws Exception {
-        throw new Exception(
-                String.format("operator %s (position: %d): insufficient parameters", operator, currentTokenIndex));
+    private void throwInvalidOperand(String operator) throws RPNCalculatorException {
+        throw new RPNCalculatorException(
+                String.format("operator %s (position: %d): insufficient parameters", operator, pos));
     }
 
-    /**
-     * Returns the values valuesStack
-     */
+    
     public Stack<Double> getValuesStack() {
         return valuesStack;
     }
 
-    /**
-     * Helper method to return a specific item in the valuesStack
-     *
-     * @param index index of the element to return
-     */
+   
     public Double getStackItem(int index) {
         return valuesStack.get(index);
     }
 
   
-
     /**
-     * Evaluates a RPN expression and pushes the result into the valuesStack
-     *
-     * @param input           valid RPN expression
-     * @param isUndoOperation indicates if the operation is an undo operation.
-     *                        undo operations use the same evaluation functions as the standard ones
-     *                        but they are not pushed into instructionsStack
-     * @throws CalculatorException
+     *   evaluate input string
+     * @param input
+     * @throws RPNCalculatorException
      */
-    public void evaluate(String input) throws Exception {
+ 
+   public void evaluate(String input) throws RPNCalculatorException {
         if (input == null) {
-            throw new Exception("Input cannot be null.");
+            throw new RPNCalculatorException("Input cannot be null.");
         }
-        currentTokenIndex = 0;
+        pos = 0;
         String[] result = input.split("\\s");
         for (String aResult : result) {
-            currentTokenIndex++;
-            processToken(aResult);
+            pos++;
+            processInputString(aResult);
         }
     }
     
-    private void evaluateLambada(String input) throws Exception {
-        if (input == null) {
-            throw new Exception("Input cannot be null.");
-        }
-        Arrays.asList(input.split(" ")).stream().forEach(number -> {
-        	try {
-				processToken(number);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-           
-        });
-    }
+ 
 
 }

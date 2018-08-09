@@ -2,16 +2,21 @@ package rac.rpn.calculator;
 import java.util.HashMap;
 import java.util.Map;
 
+import rac.rpn.exception.RPNCalculatorException;
+
 import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
 
-
-public enum Operation {
-	
+/**
+ * 
+ * @author Rachana Sane
+ *
+ */
+public enum Operation {	
 
 
 	    ADDITION("+",  2) {
-	        public Double calculate(Double firstOperand, Double secondOperand) throws Exception {
+	        public Double calculate(Double firstOperand, Double secondOperand) throws RPNCalculatorException {
 	            return secondOperand + firstOperand;
 	        }
 	    },
@@ -29,9 +34,9 @@ public enum Operation {
 	    },
 
 	    DIVISION("/",  2) {
-	        public Double calculate(Double firstOperand, Double secondOperand) throws Exception {
+	        public Double calculate(Double firstOperand, Double secondOperand) throws RPNCalculatorException {
 	            if (firstOperand == 0)
-	                throw new Exception("Cannot divide by 0.");
+	                throw new RPNCalculatorException("Cannot divide by 0.");
 	            return secondOperand / firstOperand;
 	        }
 	    },
@@ -42,28 +47,21 @@ public enum Operation {
 	        }
 	    },
 
-	    POWER("pow",  1) {
-	        public Double calculate(Double firstOperand, Double secondOperand) {
-	            return pow(firstOperand, 2.0);
-	        }
-	    },
-
+	  
 	    UNDO("undo",  0) {
-	        public Double calculate(Double firstOperand, Double secondOperand) throws Exception {
-	            throw new Exception("Invalid operation");
+	        public Double calculate(Double firstOperand, Double secondOperand) throws RPNCalculatorException {
+	            throw new RPNCalculatorException("Invalid operation");
 	        }
 	    },
 
 	    CLEAR("clear",  0) {
-	        public Double calculate(Double firstOperand, Double secondOperand) throws Exception {
-	            throw new Exception("Invalid operation");
+	        public Double calculate(Double firstOperand, Double secondOperand) throws RPNCalculatorException {
+	            throw new RPNCalculatorException("Invalid operation");
 	        }
 	    };
 	
 	
-	
-	    // using map for a constant lookup cost
-	    private static final Map<String, Operation> operationFactory = new HashMap<String, Operation>();
+	    private static final Map<String, Operation> operationFactory = new HashMap<>();
 
 	    static {
 	        for (Operation o : values()) {
@@ -71,21 +69,19 @@ public enum Operation {
 	        }
 	    }
 
-	    private String symbol;
-	 //   private String opposite;
-	    private int operandsNumber;
+	    private String symbol;	
+	    private int noOfOperands;
 
-	    Operation(String symbol,int operandsNumber) {
-	        this.symbol = symbol;
-	    //    this.opposite = opposite;
-	        this.operandsNumber = operandsNumber;
+	    Operation(String symbol,int noOfOperands) {
+	        this.symbol = symbol;	 
+	        this.noOfOperands = noOfOperands;
 	    }
 
 	    public static Operation getEnum(String value) {
 	        return operationFactory.get(value);
 	    }
 
-	    public abstract Double calculate(Double firstOperand, Double secondOperand) throws Exception;
+	    public abstract Double calculate(Double firstOperand, Double secondOperand) throws RPNCalculatorException;
 
 	    public String getSymbol() {
 	        return symbol;
@@ -93,8 +89,8 @@ public enum Operation {
 
 	  
 
-	    public int getOperandsNumber() {
-	        return operandsNumber;
+	    public int getNoOfOperands() {
+	        return noOfOperands;
 	    }
 
 	    @Override
